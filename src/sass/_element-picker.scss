@@ -1,0 +1,7 @@
+@use '../../node_modules/@tweakpane/core/lib/sass/tp';
+
+.#{tp.$prefix}-elpickv {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}

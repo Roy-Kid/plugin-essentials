@@ -7,16 +7,17 @@ import {
 	ValueMap,
 } from '@tweakpane/core';
 
-import {ButtonGridApi} from '../button-grid/api/button-grid.js';
-import {ButtonGridController} from '../button-grid/controller/button-grid.js';
-import {ButtonGridBladeController} from '../button-grid/controller/button-grid-blade.js';
+import {ElementPickerApi} from './api/element-picker.js';
+import {ElementPickerController} from './controller/element-picker.js';
+import {ElementPickerBladeController} from './controller/element-picker-blade.js';
 
 export interface ElementPickerBladeParams extends BaseBladeParams {
 	view: 'elementpicker';
 	label?: string;
+	rows?: number;
 }
 
-const ELEMENTS: (string | null)[][] = [
+const FULL_TABLE: (string | null)[][] = [
 	[
 		'H',
 		null,
@@ -79,6 +80,18 @@ const ELEMENTS: (string | null)[][] = [
 	],
 ];
 
+const COMPACT_TABLE: string[][] = [
+	['H', 'He'],
+	['Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne'],
+];
+
+function buildRows(rowCount: number): string[][] {
+	if (rowCount <= 2) {
+		return COMPACT_TABLE.slice(0, rowCount).map((r) => r.slice());
+	}
+	return FULL_TABLE.slice(0, rowCount).map((r) => r.map((v) => v ?? ''));
+}
+
 export const ElementPickerBladePlugin: BladePlugin<ElementPickerBladeParams> =
 	createPlugin({
 		id: 'elementpicker',
@@ -88,55 +101,27 @@ export const ElementPickerBladePlugin: BladePlugin<ElementPickerBladeParams> =
 			const result = parseRecord<ElementPickerBladeParams>(params, (p) => ({
 				view: p.required.constant('elementpicker'),
 				label: p.optional.string,
+				rows: p.optional.number,
 			}));
 			return result ? {params: result} : null;
 		},
 		controller(args) {
-			const cols = 18;
-			const rows = 3;
-			const grid = new ButtonGridController(args.document, {
-				size: [cols, rows],
-				cellConfig: (x, y) => ({
-					title: ELEMENTS[y][x] ?? '',
-				}),
+			const rows = Math.max(1, Math.min(3, args.params.rows ?? 3));
+			const data = buildRows(rows);
+			const picker = new ElementPickerController(args.document, {
+				rows: data,
 			});
-
-			// Hide buttons for empty cells
-			grid.cellControllers.forEach((cc, i) => {
-				const x = i % cols;
-				const y = Math.floor(i / cols);
-				if (!ELEMENTS[y][x]) {
-					cc.viewProps.set('disabled', true);
-					cc.view.element.style.visibility = 'hidden';
-				}
-			});
-
-			// Adjust column widths based on text length
-			const colWidths = [] as number[];
-			for (let x = 0; x < cols; x++) {
-				let maxLen = 0;
-				for (let y = 0; y < rows; y++) {
-					const sym = ELEMENTS[y][x];
-					if (sym) {
-						maxLen = Math.max(maxLen, sym.length);
-					}
-				}
-				colWidths.push(Math.max(1, maxLen));
-			}
-			grid.view.element.style.gridTemplateColumns = colWidths
-				.map((l) => `${l}fr`)
-				.join(' ');
-			return new ButtonGridBladeController(args.document, {
+			return new ElementPickerBladeController(args.document, {
 				blade: args.blade,
 				labelProps: ValueMap.fromObject<LabelPropsObject>({
 					label: args.params.label,
 				}),
-				valueController: grid,
+				valueController: picker,
 			});
 		},
 		api(args) {
-			if (args.controller instanceof ButtonGridBladeController) {
-				return new ButtonGridApi(args.controller);
+			if (args.controller instanceof ElementPickerBladeController) {
+				return new ElementPickerApi(args.controller);
 			}
 			return null;
 		},

@@ -59,4 +59,6 @@ export * from './radio-grid/controller/radio.js';
 export * from './radio-grid/controller/radio-grid.js';
 export * from './radio-grid/view/radio.js';
 
+export * from './element-picker/api/element-picker.js';
+export * from './element-picker/controller/element-picker.js';
 export * from './element-picker/plugin.js';
