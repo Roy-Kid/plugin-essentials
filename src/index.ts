@@ -2,6 +2,7 @@ import {TpPlugin} from '@tweakpane/core';
 
 import {ButtonGridBladePlugin} from './button-grid/plugin.js';
 import {CubicBezierBladePlugin} from './cubic-bezier/plugin.js';
+import {ElementPickerBladePlugin} from './element-picker/plugin.js';
 import {FpsGraphBladePlugin} from './fps-graph/plugin.js';
 import {IntervalInputPlugin} from './interval/plugin.js';
 import {RadioGridBladePlugin} from './radio-grid/blade-plugin.js';
@@ -22,6 +23,7 @@ export const plugins: TpPlugin[] = [
 	RadioGruidBooleanInputPlugin,
 	RadioGruidNumberInputPlugin,
 	RadioGruidStringInputPlugin,
+	ElementPickerBladePlugin,
 ];
 
 export * from './button-grid/api/button-cell.js';
@@ -56,3 +58,5 @@ export * from './radio-grid/api/tp-radio-grid-event.js';
 export * from './radio-grid/controller/radio.js';
 export * from './radio-grid/controller/radio-grid.js';
 export * from './radio-grid/view/radio.js';
+
+export * from './element-picker/plugin.js';

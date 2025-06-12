@@ -100,20 +100,27 @@
 			console.log(ev);
 		});
 
-		panes[1].addBlade({
-			view: 'buttongrid',
-			size: [3, 3],
-			cells: (x, y) => ({
-				title: [
-					['NW', 'N', 'NE'],
-					['W',  '*', 'E'],
-					['SW', 'S', 'SE'],
-				][y][x],
-			}),
-			label: 'button\ngrid',
-		}).on('click', (ev) => {
-			console.log(ev);
-		});
+                panes[1].addBlade({
+                        view: 'buttongrid',
+                        size: [3, 3],
+                        cells: (x, y) => ({
+                                title: [
+                                        ['NW', 'N', 'NE'],
+                                        ['W',  '*', 'E'],
+                                        ['SW', 'S', 'SE'],
+                                ][y][x],
+                        }),
+                        label: 'button\ngrid',
+                }).on('click', (ev) => {
+                        console.log(ev);
+                });
+
+                panes[1].addBlade({
+                        view: 'elementpicker',
+                        label: 'elements',
+                }).on('click', (ev) => {
+                        console.log(ev);
+                });
 
 		window.panes = panes;
 
