@@ -34,10 +34,11 @@
 			interval: {min: 40, max: 60},
 			radiogrid: 25,
 		};
-		const panes = [
-			'Input bindings',
-			'Blades',
-		].map((title) => {
+               const panes = [
+                       'Input bindings',
+                       'Blades',
+                       'Element Picker',
+               ].map((title) => {
 			const pane = new Pane({
 				container: document.querySelector('.wrapper'),
 				title: title,
@@ -115,12 +116,12 @@
                         console.log(ev);
                 });
 
-                panes[1].addBlade({
-                        view: 'elementpicker',
-                        label: 'elements',
-                }).on('click', (ev) => {
-                        console.log(ev);
-                });
+               panes[2].addBlade({
+                       view: 'elementpicker',
+                       label: 'elements',
+               }).on('click', (ev) => {
+                       console.log(ev);
+               });
 
 		window.panes = panes;
 
