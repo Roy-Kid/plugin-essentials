@@ -25,13 +25,31 @@ export class ElementPickerController implements Controller<PlainView> {
 			viewName: 'elpick',
 		});
 
+		const colCount = Math.max(...config.rows.map((r) => r.length));
+		const colWidths: number[] = [];
+		for (let x = 0; x < colCount; x++) {
+			let w = 1;
+			config.rows.forEach((row) => {
+				const t = row[x];
+				if (t) {
+					w = Math.max(w, t.length);
+				}
+			});
+			colWidths[x] = w;
+		}
+
 		config.rows.forEach((row, y) => {
 			const grid = new ButtonGridController(doc, {
 				size: [row.length, 1],
-				cellConfig: (x) => ({title: row[x]}),
+				cellConfig: (x) => ({title: row[x] ?? ''}),
 			});
-			grid.view.element.style.gridTemplateColumns = `repeat(${row.length}, 2ch)`;
+			grid.view.element.style.gridTemplateColumns = row
+				.map((_, i) => `${colWidths[i]}ch`)
+				.join(' ');
 			grid.cellControllers.forEach((cc, x) => {
+				if (!row[x]) {
+					cc.viewProps.set('hidden', true);
+				}
 				this.coordMap_.set(cc, [x, y]);
 				this.cellControllers.push(cc);
 			});

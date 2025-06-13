@@ -85,11 +85,16 @@ const COMPACT_TABLE: string[][] = [
 	['Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne'],
 ];
 
+const SKIP_START = 2;
+const SKIP_END = 11;
+
 function buildRows(rowCount: number): string[][] {
 	if (rowCount <= 2) {
 		return COMPACT_TABLE.slice(0, rowCount).map((r) => r.slice());
 	}
-	return FULL_TABLE.slice(0, rowCount).map((r) => r.map((v) => v ?? ''));
+	return FULL_TABLE.slice(0, rowCount).map((row) =>
+		row.filter((_, i) => i < SKIP_START || i > SKIP_END).map((v) => v ?? ''),
+	);
 }
 
 export const ElementPickerBladePlugin: BladePlugin<ElementPickerBladeParams> =
