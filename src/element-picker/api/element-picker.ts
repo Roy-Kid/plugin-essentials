@@ -35,13 +35,6 @@ export class ElementPickerApi extends BladeApi<ElementPickerBladeController> {
 		});
 	}
 
-	public cell(x: number, y: number): ButtonCellApi | undefined {
-		const vc = this.controller.valueController;
-		const row = vc.rowControllers[y];
-		const cc = row?.cellControllers[x];
-		return cc ? this.cellToApiMap_.get(cc) : undefined;
-	}
-
 	public on<EventName extends keyof ElementPickerApiEvents>(
 		eventName: EventName,
 		handler: (ev: ElementPickerApiEvents[EventName]['event']) => void,

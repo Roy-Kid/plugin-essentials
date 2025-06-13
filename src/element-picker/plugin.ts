@@ -14,7 +14,7 @@ import {ElementPickerBladeController} from './controller/element-picker-blade.js
 export interface ElementPickerBladeParams extends BaseBladeParams {
 	view: 'elementpicker';
 	label?: string;
-	rows?: number;
+	mode?: 'full' | 'compact';
 }
 
 const FULL_TABLE: (string | null)[][] = [
@@ -80,21 +80,19 @@ const FULL_TABLE: (string | null)[][] = [
 	],
 ];
 
-const COMPACT_TABLE: string[][] = [
-	['H', 'He'],
-	['Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne'],
-];
-
 const SKIP_START = 2;
 const SKIP_END = 11;
 
-function buildRows(rowCount: number): string[][] {
-	if (rowCount <= 2) {
-		return COMPACT_TABLE.slice(0, rowCount).map((r) => r.slice());
+function getTable(mode: 'full' | 'compact'): (string | null)[][] {
+	if (mode === 'full') {
+		return FULL_TABLE;
+	} else if (mode === 'compact') {
+		return FULL_TABLE.slice(0, 2).map((row) =>
+			row.map((el, i) => (i < SKIP_START || i > SKIP_END ? null : el)),
+		);
+	} else {
+		throw new Error(`Unknown mode: ${mode}`);
 	}
-	return FULL_TABLE.slice(0, rowCount).map((row) =>
-		row.filter((_, i) => i < SKIP_START || i > SKIP_END).map((v) => v ?? ''),
-	);
 }
 
 export const ElementPickerBladePlugin: BladePlugin<ElementPickerBladeParams> =
@@ -111,10 +109,10 @@ export const ElementPickerBladePlugin: BladePlugin<ElementPickerBladeParams> =
 			return result ? {params: result} : null;
 		},
 		controller(args) {
-			const rows = Math.max(1, Math.min(3, args.params.rows ?? 3));
-			const data = buildRows(rows);
+			const mode = args.params.mode ?? 'full';
+			const table = getTable(mode);
 			const picker = new ElementPickerController(args.document, {
-				rows: data,
+				table: table,
 			});
 			return new ElementPickerBladeController(args.document, {
 				blade: args.blade,

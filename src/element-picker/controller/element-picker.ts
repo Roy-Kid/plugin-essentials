@@ -1,21 +1,19 @@
 import {
 	ButtonController,
+	ButtonPropsObject,
 	Controller,
 	PlainView,
+	ValueMap,
 	ViewProps,
 } from '@tweakpane/core';
 
-import {ButtonGridController} from '../../button-grid/controller/button-grid.js';
-
 export interface ElementPickerControllerConfig {
-	rows: string[][];
+	table: (string | null)[][];
 }
 
 export class ElementPickerController implements Controller<PlainView> {
 	public readonly view: PlainView;
 	public readonly viewProps: ViewProps;
-	public readonly rowControllers: ButtonGridController[] = [];
-	public readonly cellControllers: ButtonController[] = [];
 	private coordMap_: Map<ButtonController, [number, number]> = new Map();
 
 	constructor(doc: Document, config: ElementPickerControllerConfig) {
@@ -24,47 +22,56 @@ export class ElementPickerController implements Controller<PlainView> {
 			viewProps: this.viewProps,
 			viewName: 'elpick',
 		});
-
-		const colCount = Math.max(...config.rows.map((r) => r.length));
-		const colWidths: number[] = [];
-		for (let x = 0; x < colCount; x++) {
-			let w = 1;
-			config.rows.forEach((row) => {
-				const t = row[x];
-				if (t) {
-					w = Math.max(w, t.length);
+		const w = config.table[0].length;
+		for (let y = 0; y < config.table.length; y++) {
+			for (let x = 0; x < config.table[y].length; x++) {
+				const el = config.table[y][x];
+				const bc = new ButtonController(doc, {
+					props: ValueMap.fromObject<ButtonPropsObject>({
+						title: el ?? '',
+					}),
+					viewProps: ViewProps.create(),
+				});
+				if (el === null) {
+					// TODO: placeholder, invisible and disabled
+					bc.viewProps.set('hidden', true);
 				}
-			});
-			colWidths[x] = w;
+				this.coordMap_.set(bc, [x, y]);
+			}
 		}
 
-		config.rows.forEach((row, y) => {
-			const grid = new ButtonGridController(doc, {
-				size: [row.length, 1],
-				cellConfig: (x) => ({title: row[x] ?? ''}),
+		this.viewProps = ViewProps.create();
+		this.viewProps.handleDispose(() => {
+			this.coordMap_.forEach((_, cc) => {
+				cc.viewProps.set('disposed', true);
 			});
-			grid.view.element.style.gridTemplateColumns = row
-				.map((_, i) => `${colWidths[i]}ch`)
-				.join(' ');
-			grid.cellControllers.forEach((cc, x) => {
-				if (!row[x]) {
-					cc.viewProps.set('hidden', true);
-				}
-				this.coordMap_.set(cc, [x, y]);
-				this.cellControllers.push(cc);
-			});
-			this.rowControllers.push(grid);
-			this.view.element.appendChild(grid.view.element);
 		});
 
-		this.viewProps.handleDispose(() => {
-			this.rowControllers.forEach((rc) => {
-				rc.viewProps.set('disposed', true);
-			});
+		this.view = new PlainView(doc, {
+			viewProps: this.viewProps,
+			viewName: 'btngrid',
+		});
+		this.view.element.style.gridTemplateColumns = `repeat(${w}, 1fr)`;
+
+		this.coordMap_.forEach((_, bc) => {
+			this.view.element.appendChild(bc.view.element);
 		});
 	}
 
 	public cellCoord(cc: ButtonController): [number, number] | undefined {
 		return this.coordMap_.get(cc);
+	}
+
+	public getCell([x, y]: [number, number]): ButtonController | undefined {
+		for (const [bc, coord] of this.coordMap_) {
+			if (coord[0] === x && coord[1] === y) {
+				return bc;
+			}
+		}
+		return undefined;
+	}
+
+	get cellControllers(): ButtonController[] {
+		return Array.from(this.coordMap_.keys());
 	}
 }
